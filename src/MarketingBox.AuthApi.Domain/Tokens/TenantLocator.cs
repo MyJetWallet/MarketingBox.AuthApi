@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+
+public class TenantLocator
+{
+    private readonly Dictionary<string, string> _hostTenantIdDict;
+
+    public TenantLocator(Dictionary<string, string> hostTenantIdDict)
+    {
+        _hostTenantIdDict = hostTenantIdDict;
+    }
+
+    public string GetTenantIdByHost(string host)
+    {
+        string tenantId = null;
+
+        if (_hostTenantIdDict.TryGetValue(tenantId, out tenantId))
+        {
+            return tenantId;
+        }
+
+        if (host == "localhost")
+        {
+            return "default-tenant-id";
+        }
+
+        throw new InvalidOperationException($"There is no registered tenant for {host}");
+
+    }
+}
