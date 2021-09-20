@@ -9,7 +9,6 @@ using MarketingBox.AuthApi.Domain.Tokens;
 
 namespace MarketingBox.AuthApi.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("/api/auth")]
     public class AuthController : ControllerBase

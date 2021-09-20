@@ -14,7 +14,7 @@ public class TenantLocator
     {
         string tenantId = null;
 
-        if (_hostTenantIdDict.TryGetValue(tenantId, out tenantId))
+        if (_hostTenantIdDict.TryGetValue(host, out tenantId))
         {
             return tenantId;
         }
