@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MarketingBox.Auth.Service.Client" Version="1.0.6" />
+    <PackageReference Include="MarketingBox.Auth.Service.Client" Version="1.0.8" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.12.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.12.2" />
     <PackageReference Include="MyNoSqlServer.DataReader" Version="1.3.1" />

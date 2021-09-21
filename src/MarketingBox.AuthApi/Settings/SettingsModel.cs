@@ -27,12 +27,6 @@ namespace MarketingBox.AuthApi.Settings
         [YamlProperty("MarketingBoxAuthApi.JwtTtl")]
         public string JwtTtl { get; set; }
 
-        [YamlProperty("MarketingBoxAuthApi.EncryptionSalt")]
-        public string EncryptionSalt { get; set; }
-
-        [YamlProperty("MarketingBoxAuthApi.EncryptionSecret")]
-        public string EncryptionSecret { get; set; }
-
         [YamlProperty("MarketingBoxAuthApi.MyNoSqlReaderHostPort")]
         public string MyNoSqlReaderHostPort { get; set; }
 

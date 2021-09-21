@@ -29,8 +29,6 @@ namespace MarketingBox.AuthApi.Domain.Tokens
         private readonly string _tokenSecret;
         private readonly string _mainAudience;
         private readonly TimeSpan _ttl;
-        private readonly string _encryptionSalt;
-        private readonly string _encryptionKey;
 
         public TokensService(
             IMyNoSqlServerDataReader<UserNoSql> reader,
@@ -38,9 +36,7 @@ namespace MarketingBox.AuthApi.Domain.Tokens
             ICryptoService cryptoService,
             string tokenSecret,
             string mainAudience,
-            TimeSpan ttl,
-            string encryptionSalt,
-            string encryptionKey)
+            TimeSpan ttl)
         {
             _reader = reader;
             _userService = userService;
@@ -48,50 +44,36 @@ namespace MarketingBox.AuthApi.Domain.Tokens
             _tokenSecret = tokenSecret;
             _mainAudience = mainAudience;
             _ttl = ttl;
-            _encryptionSalt = encryptionSalt;
-            _encryptionKey = encryptionKey;
         }
 
         public async Task<(TokenInfo Token, LoginError Error)> LoginAsync(string login, string tenantId, string password)
         {
-            var encryptedEmail = _cryptoService.Encrypt(login, _encryptionSalt, _encryptionKey);
-            var userCache = _reader.Get(UserNoSql.GeneratePartitionKey(tenantId), UserNoSql.GenerateRowKey(encryptedEmail));
-
             bool isEmail = MailAddress.TryCreate(login, out var _);
 
             string passHash = null;
             string userSalt = null;
             string userName = null;
 
-            if (userCache == null)
+            var usersResponse = await _userService.GetAsync(new GetUserRequest()
             {
-                var usersResponse = await _userService.GetAsync(new GetUserRequest()
-                {
-                    Username = !isEmail ? login : null,
-                    EmailEncrypted = isEmail ? encryptedEmail : null,
-                    TenantId = tenantId
-                });
+                Username = !isEmail ? login : null,
+                Email = isEmail ? login : null,
+                TenantId = tenantId
+            });
 
-                if (usersResponse == null || usersResponse.User == null || usersResponse.User.Count == 0)
-                    return (null, new LoginError() { Type = LoginErrorType.NoUser });
+            if (usersResponse == null || usersResponse.User == null || usersResponse.User.Count == 0)
+                return (null, new LoginError() { Type = LoginErrorType.NoUser });
 
-                if (usersResponse.User.Count > 1)
-                {
-                    throw new InvalidOperationException("There can not be more than 1 user for tenant and login");
-                }
-
-                var user = usersResponse.User.First();
-
-                passHash = user.PasswordHash;
-                userSalt = user.Salt;
-                userName = user.Username;
-            }
-            else
+            if (usersResponse.User.Count > 1)
             {
-                passHash = userCache.PasswordHash;
-                userSalt = userCache.Salt;
-                userName = userCache.Username;
+                throw new InvalidOperationException("There can not be more than 1 user for tenant and login");
             }
+
+            var user = usersResponse.User.First();
+
+            passHash = user.PasswordHash;
+            userSalt = user.Salt;
+            userName = user.Username;
 
             if (!_cryptoService.VerifyHash(userSalt, password, passHash))
             {
@@ -114,7 +96,6 @@ namespace MarketingBox.AuthApi.Domain.Tokens
             {
                 _mainAudience
             };
-
 
             return Create(expirationDate, properties, audiences);
         }

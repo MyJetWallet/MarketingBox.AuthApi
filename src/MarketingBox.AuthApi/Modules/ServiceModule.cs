@@ -45,9 +45,7 @@ namespace MarketingBox.AuthApi.Modules
                     x.Resolve<ICryptoService>(),
                     Program.Settings.JwtSecret,
                     Program.Settings.JwtAudience,
-                    ttl,
-                    Program.Settings.EncryptionSalt,
-                    Program.Settings.EncryptionSecret))
+                    ttl))
                 .As<ITokensService>()
                 .SingleInstance();
         }
