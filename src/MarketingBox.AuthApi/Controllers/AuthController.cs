@@ -1,3 +1,4 @@
+using System;
 using MarketingBox.AuthApi.Models.Auth;
 using MarketingBox.AuthApi.Pagination;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using MarketingBox.AuthApi.Domain.Models.Errors;
 using MarketingBox.AuthApi.Domain.Tokens;
+using Role = MarketingBox.AuthApi.Domain.Tokens.Role;
 
 namespace MarketingBox.AuthApi.Controllers
 {
@@ -57,7 +59,14 @@ namespace MarketingBox.AuthApi.Controllers
             return Ok(new AuthenticateResponse()
             {
                 Token = token.Token,
-                ExpiresAt = token.ExpiresAt
+                ExpiresAt = token.ExpiresAt,
+                Role = token.Role switch {
+                    Role.Affiliate => Models.Auth.Role.Affiliate,
+                    Role.MasterAffiliate => Models.Auth.Role.MasterAffiliate,
+                    Role.AffiliateManager => Models.Auth.Role.AffiliateManager,
+                    Role.Admin => Models.Auth.Role.Admin,
+                    _ => throw new ArgumentOutOfRangeException(nameof(token.Role), token.Role, null)
+                }
             });
         }
     }

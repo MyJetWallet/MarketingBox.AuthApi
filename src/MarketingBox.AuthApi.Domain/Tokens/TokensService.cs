@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using MyNoSqlServer.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Mail;
@@ -21,6 +22,7 @@ namespace MarketingBox.AuthApi.Domain.Tokens
         private const string UserIdClaim = "user-id";
         private const string UserNameClaim = "user-name";
         private const string TenantIdClaim = "tenant-id";
+        private const string UserRoleClaim = "user-role";
 
 
         private readonly IMyNoSqlServerDataReader<UserNoSql> _reader;
@@ -53,6 +55,8 @@ namespace MarketingBox.AuthApi.Domain.Tokens
             string passHash = null;
             string userSalt = null;
             string userName = null;
+            Role userRole = Role.Affiliate;
+            string userId = null;
 
             var usersResponse = await _userService.GetAsync(new GetUserRequest()
             {
@@ -74,6 +78,8 @@ namespace MarketingBox.AuthApi.Domain.Tokens
             passHash = user.PasswordHash;
             userSalt = user.Salt;
             userName = user.Username;
+            userRole = user.Role.MapEnum<Role>();
+            userId = user.ExternalUserId;
 
             if (!_cryptoService.VerifyHash(userSalt, password, passHash))
             {
@@ -81,15 +87,22 @@ namespace MarketingBox.AuthApi.Domain.Tokens
             }
 
             var expAt = DateTime.UtcNow + _ttl;
-            return (new TokenInfo() { Token = Create(tenantId, userName, expAt), ExpiresAt = expAt }, null);
+            return (new TokenInfo() { Token = Create(
+                tenantId, 
+                userName, 
+                expAt, 
+                userRole, 
+                userId), ExpiresAt = expAt, Role = userRole }, null);
         }
 
-        private string Create(string tenantId, string username, DateTime expirationDate)
+        private string Create(string tenantId, string username, DateTime expirationDate, Role role, string userId)
         {
             var properties = new Dictionary<string, string>
             {
                 {UserNameClaim, username},
-                {TenantIdClaim, tenantId}
+                {TenantIdClaim, tenantId},
+                {UserRoleClaim, role.ToString()},
+                {UserIdClaim, userId}
             };
 
             var audiences = new List<string>()
