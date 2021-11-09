@@ -22,7 +22,6 @@ namespace MarketingBox.AuthApi.Domain.Tokens
         private const string UserIdClaim = "user-id";
         private const string UserNameClaim = "user-name";
         private const string TenantIdClaim = "tenant-id";
-        private const string UserRoleClaim = "user-role";
 
 
         private readonly IMyNoSqlServerDataReader<UserNoSql> _reader;
@@ -101,7 +100,7 @@ namespace MarketingBox.AuthApi.Domain.Tokens
             {
                 {UserNameClaim, username},
                 {TenantIdClaim, tenantId},
-                {UserRoleClaim, role.ToString()},
+                {ClaimTypes.Role, role.ToString()},
                 {UserIdClaim, userId}
             };
 
